@@ -55,7 +55,7 @@ def init_dist(local_rank: int, num_local_ranks: int):
 
     sig = inspect.signature(dist.init_process_group)
     params = {
-        "backend": "nccl",
+        "backend": os.getenv("DIST_BACKEND", "nccl"),
         "init_method": f"tcp://{ip}:{port}",
         "world_size": world_size,
         "rank": node_rank,
@@ -76,7 +76,8 @@ def init_dist(local_rank: int, num_local_ranks: int):
 def init_dist_under_torchrun(local_rank: int, num_local_ranks: int):
     # torchrun already sets RANK, WORLD_SIZE, MASTER_ADDR, MASTER_PORT
     dist.init_process_group(
-        backend="nccl", device_id=torch.device(f"cuda:{local_rank}")
+        backend=os.getenv("DIST_BACKEND", "nccl"),
+        device_id=torch.device(f"cuda:{local_rank}"),
     )
 
     torch.set_default_dtype(torch.bfloat16)
